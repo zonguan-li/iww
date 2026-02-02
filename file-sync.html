@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>设备文件同步</title>
+    <title>设备文件同步 & 消息传递</title>
     <style>
         * {
             margin: 0;
@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -77,10 +77,116 @@
             color: #6c757d;
         }
 
+        .config-link {
+            font-size: 13px;
+            color: #667eea;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .config-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Tab切换 */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e9ecef;
+            background: #f8f9fa;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            color: #6c757d;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* 消息发送区域 */
+        .message-input-area {
+            margin-bottom: 30px;
+        }
+
+        .message-input-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .message-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .message-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-send {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-send:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .message-hint {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        /* 文件上传区域 */
         .upload-area {
             padding: 30px;
-            border-bottom: 2px dashed #dee2e6;
-            margin: 30px;
+            border: 2px dashed #dee2e6;
+            margin-bottom: 30px;
             text-align: center;
             border-radius: 10px;
             background: #f8f9fa;
@@ -118,18 +224,15 @@
             display: none;
         }
 
-        .files-section {
-            padding: 30px;
-        }
-
-        .files-header {
+        /* 列表区域 */
+        .list-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
 
-        .files-header h2 {
+        .list-header h2 {
             font-size: 20px;
             color: #212529;
         }
@@ -163,10 +266,49 @@
             background: #c82333;
         }
 
-        .file-list {
+        .item-list {
             list-style: none;
         }
 
+        /* 消息卡片样式 */
+        .message-item {
+            padding: 15px;
+            background: #e7f3ff;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s;
+        }
+
+        .message-item:hover {
+            background: #d0e9ff;
+            transform: translateX(5px);
+        }
+
+        .message-content {
+            color: #212529;
+            font-size: 15px;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+
+        .message-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .message-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 文件卡片样式 */
         .file-item {
             display: flex;
             justify-content: space-between;
@@ -307,22 +449,134 @@
             border-left: 4px solid #17a2b8;
         }
 
+        /* 配置模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 22px;
+            color: #212529;
+            margin-bottom: 10px;
+        }
+
+        .modal-header p {
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
         @media (max-width: 600px) {
             .container {
                 border-radius: 0;
             }
 
-            .file-item {
+            .file-item, .message-item {
                 flex-direction: column;
                 gap: 15px;
             }
 
-            .file-actions {
+            .file-actions, .message-actions {
                 width: 100%;
             }
 
             .btn {
                 flex: 1;
+            }
+
+            .message-input-box {
+                flex-direction: column;
             }
         }
     </style>
@@ -330,8 +584,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>📁 设备文件同步</h1>
-            <p>A设备 ⇄ B设备 无缝文件传输</p>
+            <h1>📁 设备同步 & 💬 消息传递</h1>
+            <p>A设备 ⇄ B设备 无缝文件传输和即时消息</p>
         </div>
 
         <div class="status">
@@ -339,30 +593,98 @@
                 <div class="status-dot"></div>
                 <span>在线同步中</span>
             </div>
-            <div class="last-sync">最后同步: <span id="lastSyncTime">--</span></div>
+            <div>
+                <a class="config-link" onclick="openConfigModal()">⚙️ 配置</a>
+                <span class="last-sync" style="margin-left: 15px;">最后同步: <span id="lastSyncTime">--</span></span>
+            </div>
         </div>
 
-        <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">☁️</div>
-            <h3>点击或拖拽文件到此处上传</h3>
-            <p>支持所有文件类型，文件将保存24小时</p>
-            <input type="file" id="fileInput" class="file-input" multiple>
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('messages')">💬 消息</button>
+            <button class="tab" onclick="switchTab('files')">📁 文件</button>
         </div>
 
-        <div class="files-section">
-            <div class="files-header">
+        <!-- 消息Tab -->
+        <div id="messagesTab" class="tab-content active">
+            <div class="message-input-area">
+                <div class="message-input-box">
+                    <input type="text" id="messageInput" class="message-input" placeholder="输入消息内容..." onkeypress="handleMessageEnter(event)">
+                    <button class="btn-send" onclick="sendMessage()">📤 发送</button>
+                </div>
+                <div class="message-hint">💡 发送文本消息，对方设备刷新即可看到</div>
+            </div>
+
+            <div class="list-header">
+                <h2>💬 消息记录</h2>
+                <div>
+                    <button class="btn btn-refresh" onclick="refreshMessages()">🔄 刷新</button>
+                    <button class="btn btn-clean" onclick="cleanOldItems('messages')">🗑️ 清理</button>
+                </div>
+            </div>
+
+            <div id="messageListContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>正在加载消息...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文件Tab -->
+        <div id="filesTab" class="tab-content">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">☁️</div>
+                <h3>点击或拖拽文件到此处上传</h3>
+                <p>支持所有文件类型，文件将保存24小时</p>
+                <input type="file" id="fileInput" class="file-input" multiple>
+            </div>
+
+            <div class="list-header">
                 <h2>📂 文件列表</h2>
                 <div>
                     <button class="btn btn-refresh" onclick="refreshFiles()">🔄 刷新</button>
-                    <button class="btn btn-clean" onclick="cleanOldFiles()">🗑️ 清理旧文件</button>
+                    <button class="btn btn-clean" onclick="cleanOldItems('files')">🗑️ 清理</button>
                 </div>
             </div>
 
             <div id="fileListContainer">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>正在加载文件列表...</p>
+                    <p>正在加载文件...</p>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 配置模态框 -->
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ 配置GitHub访问</h2>
+                <p>首次使用需要配置GitHub Token</p>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">GitHub用户名</label>
+                <input type="text" id="inputOwner" class="form-input" placeholder="例如: zonguan-li">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">仓库名称</label>
+                <input type="text" id="inputRepo" class="form-input" placeholder="例如: iww">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">GitHub Token</label>
+                <input type="password" id="inputToken" class="form-input" placeholder="ghp_xxxxxxxxxxxxx">
+                <div class="form-hint">
+                    Token获取方式：GitHub头像 → Settings → Developer settings → Personal access tokens → Generate new token (classic) → 勾选 repo 权限
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeConfigModal()">取消</button>
+                <button class="btn-primary" onclick="saveConfig()">保存配置</button>
             </div>
         </div>
     </div>
@@ -372,26 +694,246 @@
     </div>
 
     <script>
-        // GitHub配置
-        const CONFIG = {
-            owner: 'zonguan-li',
-            repo: 'iww',
-            token: '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',
+        // 配置管理
+        let CONFIG = {
+            owner: '',
+            repo: '',
+            token: '',
             branch: 'main',
-            folder: 'sync-files' // 文件存储在这个文件夹
+            messageFolder: 'sync-messages',
+            fileFolder: 'sync-files'
         };
 
-        const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.folder}`;
-
-        // 自动轮询间隔（5秒）
         let autoRefreshInterval;
+        let currentTab = 'messages';
 
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
-            setupUploadArea();
-            refreshFiles();
-            startAutoRefresh();
+            loadConfig();
+            if (!CONFIG.token) {
+                openConfigModal();
+            } else {
+                setupUploadArea();
+                refreshMessages();
+                startAutoRefresh();
+            }
         });
+
+        // 加载配置
+        function loadConfig() {
+            const saved = localStorage.getItem('github-sync-config');
+            if (saved) {
+                const data = JSON.parse(saved);
+                CONFIG.owner = data.owner || '';
+                CONFIG.repo = data.repo || '';
+                CONFIG.token = data.token || '';
+            }
+        }
+
+        // 保存配置
+        function saveConfig() {
+            const owner = document.getElementById('inputOwner').value.trim();
+            const repo = document.getElementById('inputRepo').value.trim();
+            const token = document.getElementById('inputToken').value.trim();
+
+            if (!owner || !repo || !token) {
+                showToast('请填写完整的配置信息', 'error');
+                return;
+            }
+
+            CONFIG.owner = owner;
+            CONFIG.repo = repo;
+            CONFIG.token = token;
+
+            localStorage.setItem('github-sync-config', JSON.stringify({
+                owner: owner,
+                repo: repo,
+                token: token
+            }));
+
+            showToast('配置保存成功！', 'success');
+            closeConfigModal();
+            setupUploadArea();
+            refreshMessages();
+            startAutoRefresh();
+        }
+
+        // 打开配置模态框
+        function openConfigModal() {
+            document.getElementById('inputOwner').value = CONFIG.owner;
+            document.getElementById('inputRepo').value = CONFIG.repo;
+            document.getElementById('inputToken').value = CONFIG.token;
+            document.getElementById('configModal').classList.add('show');
+        }
+
+        // 关闭配置模态框
+        function closeConfigModal() {
+            if (!CONFIG.token) {
+                showToast('请先配置GitHub Token才能使用', 'error');
+                return;
+            }
+            document.getElementById('configModal').classList.remove('show');
+        }
+
+        // Tab切换
+        function switchTab(tab) {
+            currentTab = tab;
+
+            // 更新tab按钮状态
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // 更新内容显示
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            if (tab === 'messages') {
+                document.getElementById('messagesTab').classList.add('active');
+                refreshMessages();
+            } else {
+                document.getElementById('filesTab').classList.add('active');
+                refreshFiles();
+            }
+        }
+
+        // 消息回车发送
+        function handleMessageEnter(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // 发送消息
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+
+            if (!message) {
+                showToast('请输入消息内容', 'error');
+                return;
+            }
+
+            try {
+                showToast('正在发送消息...', 'info');
+
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                const fileName = `message_${timestamp}.txt`;
+                const content = btoa(unescape(encodeURIComponent(message)));
+
+                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.messageFolder}`;
+
+                const response = await fetch(`${API_BASE}/${fileName}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${CONFIG.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: `Send message`,
+                        content: content,
+                        branch: CONFIG.branch
+                    })
+                });
+
+                if (response.ok) {
+                    showToast('✅ 消息发送成功！', 'success');
+                    input.value = '';
+                    refreshMessages();
+                } else {
+                    throw new Error(`发送失败: ${response.status}`);
+                }
+            } catch (error) {
+                showToast(`❌ 发送失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 刷新消息列表
+        async function refreshMessages() {
+            const container = document.getElementById('messageListContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在加载...</p></div>';
+
+            try {
+                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.messageFolder}`;
+                const response = await fetch(API_BASE, {
+                    headers: {
+                        'Authorization': `token ${CONFIG.token}`,
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">💬</div>
+                                <h3>还没有消息</h3>
+                                <p>发送第一条消息开始交流吧！</p>
+                            </div>
+                        `;
+                        updateLastSyncTime();
+                        return;
+                    }
+                    throw new Error(`获取消息失败: ${response.status}`);
+                }
+
+                const files = await response.json();
+                const messages = files.filter(f => f.name.startsWith('message_'));
+                const todayMessages = filterTodayItems(messages);
+
+                if (todayMessages.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💬</div>
+                            <h3>今天还没有消息</h3>
+                            <p>发送消息开始交流吧！</p>
+                        </div>
+                    `;
+                } else {
+                    await renderMessageList(todayMessages);
+                }
+
+                updateLastSyncTime();
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>加载失败</h3>
+                        <p>${error.message}</p>
+                        <button class="btn btn-refresh" onclick="refreshMessages()" style="margin-top: 15px;">重试</button>
+                    </div>
+                `;
+            }
+        }
+
+        // 渲染消息列表
+        async function renderMessageList(messages) {
+            const container = document.getElementById('messageListContainer');
+            const messageList = document.createElement('ul');
+            messageList.className = 'item-list';
+
+            // 按时间倒序
+            messages.sort((a, b) => b.name.localeCompare(a.name));
+
+            for (const msg of messages) {
+                // 获取消息内容
+                const contentResponse = await fetch(msg.download_url);
+                const content = await contentResponse.text();
+                const time = extractUploadTime(msg.name);
+
+                const li = document.createElement('li');
+                li.className = 'message-item';
+                li.innerHTML = `
+                    <div class="message-content">${escapeHtml(content)}</div>
+                    <div class="message-meta">
+                        <span class="message-time">📅 ${time}</span>
+                        <div class="message-actions">
+                            <button class="btn btn-delete" onclick='deleteItem("${CONFIG.messageFolder}", "${msg.name}", "${msg.sha}")'>🗑️ 删除</button>
+                        </div>
+                    </div>
+                `;
+                messageList.appendChild(li);
+            }
+
+            container.innerHTML = '';
+            container.appendChild(messageList);
+        }
 
         // 设置上传区域
         function setupUploadArea() {
@@ -419,7 +961,7 @@
             fileInput.addEventListener('change', (e) => {
                 const files = Array.from(e.target.files);
                 uploadFiles(files);
-                fileInput.value = ''; // 清空input，允许重复上传同名文件
+                fileInput.value = '';
             });
         }
 
@@ -432,6 +974,8 @@
                     const content = await readFileAsBase64(file);
                     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                     const fileName = `${timestamp}_${file.name}`;
+
+                    const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.fileFolder}`;
 
                     const response = await fetch(`${API_BASE}/${fileName}`, {
                         method: 'PUT',
@@ -478,6 +1022,7 @@
             container.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在加载...</p></div>';
 
             try {
+                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.fileFolder}`;
                 const response = await fetch(API_BASE, {
                     headers: {
                         'Authorization': `token ${CONFIG.token}`,
@@ -486,7 +1031,6 @@
 
                 if (!response.ok) {
                     if (response.status === 404) {
-                        // 文件夹不存在，显示空状态
                         container.innerHTML = `
                             <div class="empty-state">
                                 <div class="empty-state-icon">📭</div>
@@ -501,30 +1045,18 @@
                 }
 
                 const files = await response.json();
+                const todayFiles = filterTodayItems(files);
 
-                if (!Array.isArray(files) || files.length === 0) {
+                if (todayFiles.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
                             <div class="empty-state-icon">📭</div>
-                            <h3>还没有文件</h3>
-                            <p>上传第一个文件开始同步吧！</p>
+                            <h3>今天还没有文件</h3>
+                            <p>上传文件开始同步吧！</p>
                         </div>
                     `;
                 } else {
-                    // 过滤今天的文件
-                    const todayFiles = filterTodayFiles(files);
-
-                    if (todayFiles.length === 0) {
-                        container.innerHTML = `
-                            <div class="empty-state">
-                                <div class="empty-state-icon">📭</div>
-                                <h3>今天还没有文件</h3>
-                                <p>旧文件已被清理</p>
-                            </div>
-                        `;
-                    } else {
-                        renderFileList(todayFiles);
-                    }
+                    renderFileList(todayFiles);
                 }
 
                 updateLastSyncTime();
@@ -540,29 +1072,12 @@
             }
         }
 
-        // 过滤今天的文件
-        function filterTodayFiles(files) {
-            const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-            return files.filter(file => {
-                // 从文件名中提取时间戳
-                const match = file.name.match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
-                if (match) {
-                    const fileDate = new Date(match[1].replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
-                    return fileDate >= today;
-                }
-                return false;
-            });
-        }
-
         // 渲染文件列表
         function renderFileList(files) {
             const container = document.getElementById('fileListContainer');
             const fileList = document.createElement('ul');
-            fileList.className = 'file-list';
+            fileList.className = 'item-list';
 
-            // 按时间倒序排列
             files.sort((a, b) => b.name.localeCompare(a.name));
 
             files.forEach(file => {
@@ -583,7 +1098,7 @@
                     </div>
                     <div class="file-actions">
                         <button class="btn btn-download" onclick='downloadFile(${JSON.stringify(file)}, "${originalName}")'>⬇️ 下载</button>
-                        <button class="btn btn-delete" onclick='deleteFile("${file.name}", "${file.sha}")'>🗑️ 删除</button>
+                        <button class="btn btn-delete" onclick='deleteItem("${CONFIG.fileFolder}", "${file.name}", "${file.sha}")'>🗑️ 删除</button>
                     </div>
                 `;
                 fileList.appendChild(li);
@@ -616,13 +1131,14 @@
             }
         }
 
-        // 删除文件
-        async function deleteFile(fileName, sha) {
-            if (!confirm(`确定要删除这个文件吗？`)) {
+        // 删除项目（消息或文件）
+        async function deleteItem(folder, fileName, sha) {
+            if (!confirm(`确定要删除吗？`)) {
                 return;
             }
 
             try {
+                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${folder}`;
                 const response = await fetch(`${API_BASE}/${fileName}`, {
                     method: 'DELETE',
                     headers: {
@@ -637,8 +1153,12 @@
                 });
 
                 if (response.ok) {
-                    showToast('✅ 文件已删除', 'success');
-                    refreshFiles();
+                    showToast('✅ 已删除', 'success');
+                    if (folder === CONFIG.messageFolder) {
+                        refreshMessages();
+                    } else {
+                        refreshFiles();
+                    }
                 } else {
                     throw new Error(`删除失败: ${response.status}`);
                 }
@@ -647,13 +1167,16 @@
             }
         }
 
-        // 清理旧文件
-        async function cleanOldFiles() {
-            if (!confirm('确定要清理24小时前的旧文件吗？')) {
+        // 清理旧项目
+        async function cleanOldItems(type) {
+            if (!confirm('确定要清理24小时前的旧内容吗？')) {
                 return;
             }
 
+            const folder = type === 'messages' ? CONFIG.messageFolder : CONFIG.fileFolder;
+
             try {
+                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${folder}`;
                 const response = await fetch(API_BASE, {
                     headers: {
                         'Authorization': `token ${CONFIG.token}`,
@@ -669,9 +1192,10 @@
                 let deletedCount = 0;
 
                 for (const file of files) {
-                    const match = file.name.match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
+                    const match = file.name.match(/^(message_)?(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
                     if (match) {
-                        const fileDate = new Date(match[1].replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
+                        const dateStr = match[2];
+                        const fileDate = new Date(dateStr.replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
                         if (fileDate < yesterday) {
                             await fetch(`${API_BASE}/${file.name}`, {
                                 method: 'DELETE',
@@ -680,7 +1204,7 @@
                                     'Content-Type': 'application/json',
                                 },
                                 body: JSON.stringify({
-                                    message: `Clean old file ${file.name}`,
+                                    message: `Clean old ${file.name}`,
                                     sha: file.sha,
                                     branch: CONFIG.branch
                                 })
@@ -690,18 +1214,45 @@
                     }
                 }
 
-                showToast(`✅ 已清理 ${deletedCount} 个旧文件`, 'success');
-                refreshFiles();
+                showToast(`✅ 已清理 ${deletedCount} 项旧内容`, 'success');
+                if (type === 'messages') {
+                    refreshMessages();
+                } else {
+                    refreshFiles();
+                }
             } catch (error) {
                 showToast(`❌ 清理失败: ${error.message}`, 'error');
             }
         }
 
+        // 过滤今天的项目
+        function filterTodayItems(items) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            return items.filter(item => {
+                const match = item.name.match(/^(message_)?(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
+                if (match) {
+                    const dateStr = match[2];
+                    const itemDate = new Date(dateStr.replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
+                    return itemDate >= today;
+                }
+                return false;
+            });
+        }
+
         // 开始自动刷新
         function startAutoRefresh() {
+            if (autoRefreshInterval) {
+                clearInterval(autoRefreshInterval);
+            }
             autoRefreshInterval = setInterval(() => {
-                refreshFiles();
-            }, 5000); // 每5秒刷新一次
+                if (currentTab === 'messages') {
+                    refreshMessages();
+                } else {
+                    refreshFiles();
+                }
+            }, 5000);
         }
 
         // 更新最后同步时间
@@ -735,9 +1286,10 @@
 
         // 提取上传时间
         function extractUploadTime(fileName) {
-            const match = fileName.match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
+            const match = fileName.match(/^(message_)?(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
             if (match) {
-                const date = new Date(match[1].replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
+                const dateStr = match[2];
+                const date = new Date(dateStr.replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
                 return date.toLocaleString('zh-CN', {
                     month: '2-digit',
                     day: '2-digit',
@@ -764,6 +1316,13 @@
                 'html': '🌐', 'css': '🎨', 'js': '⚙️',
             };
             return iconMap[ext] || '📎';
+        }
+
+        // HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
     </script>
 </body>
