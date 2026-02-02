@@ -875,7 +875,8 @@
 
                 const files = await response.json();
                 const messages = files.filter(f => f.name.startsWith('message_'));
-                const todayMessages = filterTodayItems(messages);
+                // 显示所有消息（不做时间过滤）
+                const todayMessages = messages;
 
                 if (todayMessages.length === 0) {
                     container.innerHTML = `
@@ -1045,7 +1046,8 @@
                 }
 
                 const files = await response.json();
-                const todayFiles = filterTodayItems(files);
+                // 显示所有文件（不做时间过滤）
+                const todayFiles = files;
 
                 if (todayFiles.length === 0) {
                     container.innerHTML = `
