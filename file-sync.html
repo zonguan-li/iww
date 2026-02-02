@@ -3,16 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>设备文件同步 & 消息传递</title>
+    <title>设备同步 - 优化版 v3.0</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
@@ -34,14 +30,16 @@
             text-align: center;
         }
 
-        .header h1 {
-            font-size: 28px;
-            margin-bottom: 10px;
-        }
+        .header h1 { font-size: 28px; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 14px; }
 
-        .header p {
-            opacity: 0.9;
-            font-size: 14px;
+        .version-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-top: 10px;
         }
 
         .status {
@@ -53,11 +51,7 @@
             border-bottom: 1px solid #e9ecef;
         }
 
-        .status-indicator {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .status-indicator { display: flex; align-items: center; gap: 8px; }
 
         .status-dot {
             width: 10px;
@@ -72,11 +66,7 @@
             50% { opacity: 0.5; }
         }
 
-        .last-sync {
-            font-size: 13px;
-            color: #6c757d;
-        }
-
+        .last-sync { font-size: 13px; color: #6c757d; }
         .config-link {
             font-size: 13px;
             color: #667eea;
@@ -84,11 +74,6 @@
             cursor: pointer;
         }
 
-        .config-link:hover {
-            text-decoration: underline;
-        }
-
-        /* Tab切换 */
         .tabs {
             display: flex;
             border-bottom: 2px solid #e9ecef;
@@ -108,10 +93,6 @@
             position: relative;
         }
 
-        .tab:hover {
-            background: #e9ecef;
-        }
-
         .tab.active {
             color: #667eea;
             font-weight: 600;
@@ -127,19 +108,10 @@
             background: #667eea;
         }
 
-        .tab-content {
-            display: none;
-            padding: 30px;
-        }
+        .tab-content { display: none; padding: 30px; }
+        .tab-content.active { display: block; }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        /* 消息发送区域 */
-        .message-input-area {
-            margin-bottom: 30px;
-        }
+        .message-input-area { margin-bottom: 30px; }
 
         .message-input-box {
             display: flex;
@@ -153,7 +125,6 @@
             border: 2px solid #e9ecef;
             border-radius: 8px;
             font-size: 14px;
-            transition: all 0.3s;
         }
 
         .message-input:focus {
@@ -172,17 +143,11 @@
             transition: all 0.3s;
         }
 
-        .btn-send:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
+        .btn-send:hover { background: #5568d3; }
+        .btn-send:disabled { background: #ccc; cursor: not-allowed; }
 
-        .message-hint {
-            font-size: 12px;
-            color: #6c757d;
-        }
+        .message-hint { font-size: 12px; color: #6c757d; }
 
-        /* 文件上传区域 */
         .upload-area {
             padding: 30px;
             border: 2px dashed #dee2e6;
@@ -190,8 +155,8 @@
             text-align: center;
             border-radius: 10px;
             background: #f8f9fa;
-            transition: all 0.3s;
             cursor: pointer;
+            transition: all 0.3s;
         }
 
         .upload-area:hover {
@@ -202,39 +167,16 @@
         .upload-area.dragover {
             background: #e7f3ff;
             border-color: #667eea;
-            transform: scale(1.02);
         }
 
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 15px;
-        }
+        .upload-icon { font-size: 48px; margin-bottom: 15px; }
+        .file-input { display: none; }
 
-        .upload-area h3 {
-            margin-bottom: 10px;
-            color: #495057;
-        }
-
-        .upload-area p {
-            color: #6c757d;
-            font-size: 14px;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        /* 列表区域 */
         .list-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-        }
-
-        .list-header h2 {
-            font-size: 20px;
-            color: #212529;
         }
 
         .btn {
@@ -243,34 +185,15 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
-            transition: all 0.3s;
         }
 
-        .btn-refresh {
-            background: #667eea;
-            color: white;
-        }
+        .btn-refresh { background: #667eea; color: white; }
+        .btn-clean { background: #dc3545; color: white; margin-left: 10px; }
+        .btn-delete { background: #dc3545; color: white; }
+        .btn-download { background: #28a745; color: white; }
 
-        .btn-refresh:hover {
-            background: #5568d3;
-            transform: translateY(-2px);
-        }
+        .item-list { list-style: none; }
 
-        .btn-clean {
-            background: #dc3545;
-            color: white;
-            margin-left: 10px;
-        }
-
-        .btn-clean:hover {
-            background: #c82333;
-        }
-
-        .item-list {
-            list-style: none;
-        }
-
-        /* 消息卡片样式 */
         .message-item {
             padding: 15px;
             background: #e7f3ff;
@@ -278,12 +201,25 @@
             border-radius: 8px;
             border-left: 4px solid #667eea;
             transition: all 0.3s;
+            position: relative;
         }
 
-        .message-item:hover {
-            background: #d0e9ff;
-            transform: translateX(5px);
+        .message-item.pending {
+            opacity: 0.6;
+            background: #fff3cd;
+            border-left-color: #ffc107;
         }
+
+        .message-item.pending::after {
+            content: '⏳ 发送中';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 11px;
+            color: #856404;
+        }
+
+        .message-item:hover { background: #d0e9ff; }
 
         .message-content {
             color: #212529;
@@ -298,17 +234,6 @@
             align-items: center;
         }
 
-        .message-time {
-            font-size: 12px;
-            color: #6c757d;
-        }
-
-        .message-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        /* 文件卡片样式 */
         .file-item {
             display: flex;
             justify-content: space-between;
@@ -317,12 +242,6 @@
             background: #f8f9fa;
             margin-bottom: 10px;
             border-radius: 8px;
-            transition: all 0.3s;
-        }
-
-        .file-item:hover {
-            background: #e9ecef;
-            transform: translateX(5px);
         }
 
         .file-info {
@@ -332,47 +251,11 @@
             flex: 1;
         }
 
-        .file-icon {
-            font-size: 24px;
-        }
-
-        .file-details {
-            flex: 1;
-        }
-
-        .file-name {
-            font-weight: 500;
-            color: #212529;
-            margin-bottom: 4px;
-        }
-
-        .file-meta {
-            font-size: 12px;
-            color: #6c757d;
-        }
-
-        .file-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn-download {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-download:hover {
-            background: #218838;
-        }
-
-        .btn-delete {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #c82333;
-        }
+        .file-icon { font-size: 24px; }
+        .file-details { flex: 1; }
+        .file-name { font-weight: 500; color: #212529; }
+        .file-meta { font-size: 12px; color: #6c757d; margin-top: 4px; }
+        .file-actions { display: flex; gap: 10px; }
 
         .empty-state {
             text-align: center;
@@ -380,17 +263,9 @@
             color: #6c757d;
         }
 
-        .empty-state-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            opacity: 0.5;
-        }
+        .empty-state-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
 
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-        }
+        .loading { text-align: center; padding: 40px; color: #6c757d; }
 
         .spinner {
             border: 3px solid #f3f3f3;
@@ -416,40 +291,14 @@
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             display: none;
-            align-items: center;
-            gap: 10px;
             z-index: 1000;
-            animation: slideIn 0.3s;
         }
 
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
+        .toast.show { display: block; }
+        .toast.success { border-left: 4px solid #28a745; }
+        .toast.error { border-left: 4px solid #dc3545; }
+        .toast.info { border-left: 4px solid #17a2b8; }
 
-        .toast.show {
-            display: flex;
-        }
-
-        .toast.success {
-            border-left: 4px solid #28a745;
-        }
-
-        .toast.error {
-            border-left: 4px solid #dc3545;
-        }
-
-        .toast.info {
-            border-left: 4px solid #17a2b8;
-        }
-
-        /* 配置模态框 */
         .modal {
             display: none;
             position: fixed;
@@ -463,9 +312,7 @@
             justify-content: center;
         }
 
-        .modal.show {
-            display: flex;
-        }
+        .modal.show { display: flex; }
 
         .modal-content {
             background: white;
@@ -473,33 +320,13 @@
             border-radius: 15px;
             max-width: 500px;
             width: 90%;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
         }
 
-        .modal-header {
-            margin-bottom: 20px;
-        }
-
-        .modal-header h2 {
-            font-size: 22px;
-            color: #212529;
-            margin-bottom: 10px;
-        }
-
-        .modal-header p {
-            font-size: 14px;
-            color: #6c757d;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
+        .form-group { margin-bottom: 20px; }
         .form-label {
             display: block;
             font-size: 14px;
             font-weight: 500;
-            color: #495057;
             margin-bottom: 8px;
         }
 
@@ -509,18 +336,6 @@
             border: 2px solid #e9ecef;
             border-radius: 6px;
             font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-
-        .form-hint {
-            font-size: 12px;
-            color: #6c757d;
-            margin-top: 5px;
         }
 
         .modal-footer {
@@ -536,11 +351,6 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn-primary:hover {
-            background: #5568d3;
         }
 
         .btn-secondary {
@@ -550,34 +360,6 @@
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                border-radius: 0;
-            }
-
-            .file-item, .message-item {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .file-actions, .message-actions {
-                width: 100%;
-            }
-
-            .btn {
-                flex: 1;
-            }
-
-            .message-input-box {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
@@ -585,13 +367,14 @@
     <div class="container">
         <div class="header">
             <h1>📁 设备同步 & 💬 消息传递</h1>
-            <p>A设备 ⇄ B设备 无缝文件传输和即时消息</p>
+            <p>A设备 ⇄ B设备</p>
+            <span class="version-badge">⚡ 优化版 v3.0 - 乐观更新</span>
         </div>
 
         <div class="status">
             <div class="status-indicator">
                 <div class="status-dot"></div>
-                <span>在线同步中</span>
+                <span id="statusText">在线同步中</span>
             </div>
             <div>
                 <a class="config-link" onclick="openConfigModal()">⚙️ 配置</a>
@@ -604,87 +387,76 @@
             <button class="tab" onclick="switchTab('files')">📁 文件</button>
         </div>
 
-        <!-- 消息Tab -->
         <div id="messagesTab" class="tab-content active">
             <div class="message-input-area">
                 <div class="message-input-box">
-                    <input type="text" id="messageInput" class="message-input" placeholder="输入消息内容..." onkeypress="handleMessageEnter(event)">
-                    <button class="btn-send" onclick="sendMessage()">📤 发送</button>
+                    <input type="text" id="messageInput" class="message-input" placeholder="输入消息..." onkeypress="handleEnter(event)">
+                    <button class="btn-send" id="sendBtn" onclick="sendMessage()">📤 发送</button>
                 </div>
-                <div class="message-hint">💡 发送文本消息，对方设备2秒内自动同步</div>
+                <div class="message-hint">💡 优化版：发送/删除立即生效，1秒自动同步</div>
             </div>
 
             <div class="list-header">
                 <h2>💬 消息记录</h2>
                 <div>
-                    <button class="btn btn-refresh" onclick="refreshMessages()">🔄 刷新</button>
-                    <button class="btn btn-clean" onclick="cleanOldItems('messages')">🗑️ 清理</button>
+                    <button class="btn btn-refresh" onclick="forceRefreshMessages()">🔄 刷新</button>
+                    <button class="btn btn-clean" onclick="cleanOldMessages()">🗑️ 清理</button>
                 </div>
             </div>
 
             <div id="messageListContainer">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>正在加载消息...</p>
+                    <p>正在加载...</p>
                 </div>
             </div>
         </div>
 
-        <!-- 文件Tab -->
         <div id="filesTab" class="tab-content">
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">☁️</div>
-                <h3>点击或拖拽文件到此处上传</h3>
-                <p>支持所有文件类型，文件将保存24小时</p>
+                <h3>点击或拖拽文件上传</h3>
+                <p>支持所有文件类型</p>
                 <input type="file" id="fileInput" class="file-input" multiple>
             </div>
 
             <div class="list-header">
                 <h2>📂 文件列表</h2>
                 <div>
-                    <button class="btn btn-refresh" onclick="refreshFiles()">🔄 刷新</button>
-                    <button class="btn btn-clean" onclick="cleanOldItems('files')">🗑️ 清理</button>
+                    <button class="btn btn-refresh" onclick="forceRefreshFiles()">🔄 刷新</button>
+                    <button class="btn btn-clean" onclick="cleanOldFiles()">🗑️ 清理</button>
                 </div>
             </div>
 
             <div id="fileListContainer">
                 <div class="loading">
                     <div class="spinner"></div>
-                    <p>正在加载文件...</p>
+                    <p>正在加载...</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 配置模态框 -->
     <div id="configModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>⚙️ 配置GitHub访问</h2>
-                <p>首次使用需要配置GitHub Token</p>
+                <h2>⚙️ 配置</h2>
             </div>
-
             <div class="form-group">
                 <label class="form-label">GitHub用户名</label>
-                <input type="text" id="inputOwner" class="form-input" placeholder="例如: zonguan-li">
+                <input type="text" id="inputOwner" class="form-input" placeholder="zonguan-li">
             </div>
-
             <div class="form-group">
                 <label class="form-label">仓库名称</label>
-                <input type="text" id="inputRepo" class="form-input" placeholder="例如: iww">
+                <input type="text" id="inputRepo" class="form-input" placeholder="iww">
             </div>
-
             <div class="form-group">
                 <label class="form-label">GitHub Token</label>
-                <input type="password" id="inputToken" class="form-input" placeholder="ghp_xxxxxxxxxxxxx">
-                <div class="form-hint">
-                    Token获取方式：GitHub头像 → Settings → Developer settings → Personal access tokens → Generate new token (classic) → 勾选 repo 权限
-                </div>
+                <input type="password" id="inputToken" class="form-input" placeholder="ghp_xxxxx">
             </div>
-
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="closeConfigModal()">取消</button>
-                <button class="btn-primary" onclick="saveConfig()">保存配置</button>
+                <button class="btn-primary" onclick="saveConfig()">保存</button>
             </div>
         </div>
     </div>
@@ -694,50 +466,44 @@
     </div>
 
     <script>
-        // 配置管理
-        let CONFIG = {
-            owner: '',
-            repo: '',
-            token: '',
-            branch: 'main',
-            messageFolder: 'sync-messages',
-            fileFolder: 'sync-files'
-        };
-
+        // ============ 核心配置 ============
+        let CONFIG = { owner: '', repo: '', token: '', branch: 'main', messageFolder: 'sync-messages', fileFolder: 'sync-files' };
+        let messageCache = [];
+        let fileCache = [];
         let autoRefreshInterval;
         let currentTab = 'messages';
 
-        // 初始化
+        // ============ 初始化 ============
         document.addEventListener('DOMContentLoaded', () => {
             loadConfig();
+            loadCache();
+
             if (!CONFIG.token) {
                 openConfigModal();
             } else {
-                setupUploadArea();
+                setupUI();
+                renderMessages();
+                renderFiles();
                 refreshMessages();
+                refreshFiles();
                 startAutoRefresh();
             }
         });
 
-        // 加载配置
         function loadConfig() {
-            const saved = localStorage.getItem('github-sync-config');
+            const saved = localStorage.getItem('sync-config');
             if (saved) {
-                const data = JSON.parse(saved);
-                CONFIG.owner = data.owner || '';
-                CONFIG.repo = data.repo || '';
-                CONFIG.token = data.token || '';
+                Object.assign(CONFIG, JSON.parse(saved));
             }
         }
 
-        // 保存配置
         function saveConfig() {
             const owner = document.getElementById('inputOwner').value.trim();
             const repo = document.getElementById('inputRepo').value.trim();
             const token = document.getElementById('inputToken').value.trim();
 
             if (!owner || !repo || !token) {
-                showToast('请填写完整的配置信息', 'error');
+                showToast('请填写完整信息', 'error');
                 return;
             }
 
@@ -745,20 +511,15 @@
             CONFIG.repo = repo;
             CONFIG.token = token;
 
-            localStorage.setItem('github-sync-config', JSON.stringify({
-                owner: owner,
-                repo: repo,
-                token: token
-            }));
-
+            localStorage.setItem('sync-config', JSON.stringify(CONFIG));
             showToast('配置保存成功！', 'success');
             closeConfigModal();
-            setupUploadArea();
+            setupUI();
             refreshMessages();
+            refreshFiles();
             startAutoRefresh();
         }
 
-        // 打开配置模态框
         function openConfigModal() {
             document.getElementById('inputOwner').value = CONFIG.owner;
             document.getElementById('inputRepo').value = CONFIG.repo;
@@ -766,210 +527,283 @@
             document.getElementById('configModal').classList.add('show');
         }
 
-        // 关闭配置模态框
         function closeConfigModal() {
             if (!CONFIG.token) {
-                showToast('请先配置GitHub Token才能使用', 'error');
+                showToast('请先配置Token', 'error');
                 return;
             }
             document.getElementById('configModal').classList.remove('show');
         }
 
-        // Tab切换
-        function switchTab(tab) {
-            currentTab = tab;
-
-            // 更新tab按钮状态
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // 更新内容显示
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            if (tab === 'messages') {
-                document.getElementById('messagesTab').classList.add('active');
-                refreshMessages();
-            } else {
-                document.getElementById('filesTab').classList.add('active');
-                refreshFiles();
+        // ============ 缓存管理 ============
+        function loadCache() {
+            try {
+                const msgs = localStorage.getItem('msg-cache');
+                const files = localStorage.getItem('file-cache');
+                if (msgs) messageCache = JSON.parse(msgs);
+                if (files) fileCache = JSON.parse(files);
+            } catch (e) {
+                console.error('缓存加载失败', e);
             }
         }
 
-        // 消息回车发送
-        function handleMessageEnter(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
+        function saveCache() {
+            try {
+                localStorage.setItem('msg-cache', JSON.stringify(messageCache));
+                localStorage.setItem('file-cache', JSON.stringify(fileCache));
+            } catch (e) {
+                console.error('缓存保存失败', e);
             }
         }
 
-        // 发送消息
+        // ============ 乐观消息发送 ============
         async function sendMessage() {
             const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
             const message = input.value.trim();
 
-            if (!message) {
-                showToast('请输入消息内容', 'error');
-                return;
-            }
+            if (!message) return;
 
+            sendBtn.disabled = true;
+
+            // 生成数据
+            const tempId = 'temp-' + Date.now();
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const fileName = `message_${timestamp}.txt`;
+
+            // 1. 立即在UI显示（乐观更新）
+            const tempMsg = {
+                id: tempId,
+                name: fileName,
+                content: message,
+                time: new Date().toISOString(),
+                pending: true,
+                sha: null
+            };
+
+            messageCache.unshift(tempMsg);
+            renderMessages();
+            input.value = '';
+
+            // 2. 后台异步上传
             try {
-                showToast('正在发送消息...', 'info');
-
-                const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const fileName = `message_${timestamp}.txt`;
                 const content = btoa(unescape(encodeURIComponent(message)));
+                const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.messageFolder}/${fileName}`;
 
-                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.messageFolder}`;
-
-                const response = await fetch(`${API_BASE}/${fileName}`, {
+                const res = await fetch(url, {
                     method: 'PUT',
                     headers: {
                         'Authorization': `token ${CONFIG.token}`,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        message: `Send message`,
+                        message: 'Send message',
                         content: content,
                         branch: CONFIG.branch
                     })
                 });
 
-                if (response.ok) {
-                    showToast('✅ 消息发送成功！', 'success');
-                    input.value = '';
-                    // 延迟1秒刷新，等待GitHub API更新缓存
-                    setTimeout(() => {
-                        refreshMessages();
-                    }, 1000);
+                if (res.ok) {
+                    // 上传成功，标记为已确认
+                    const idx = messageCache.findIndex(m => m.id === tempId);
+                    if (idx !== -1) {
+                        messageCache[idx].pending = false;
+                        renderMessages();
+                        saveCache();
+                    }
+
+                    // 延迟获取完整数据
+                    setTimeout(() => refreshMessages(), 1500);
                 } else {
-                    throw new Error(`发送失败: ${response.status}`);
+                    throw new Error('上传失败');
                 }
             } catch (error) {
-                showToast(`❌ 发送失败: ${error.message}`, 'error');
+                showToast('❌ 发送失败', 'error');
+                messageCache = messageCache.filter(m => m.id !== tempId);
+                renderMessages();
+            } finally {
+                sendBtn.disabled = false;
             }
         }
 
-        // 刷新消息列表
-        async function refreshMessages() {
-            const container = document.getElementById('messageListContainer');
-            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在加载...</p></div>';
+        function handleEnter(e) {
+            if (e.key === 'Enter') sendMessage();
+        }
 
+        // ============ 乐观消息删除 ============
+        async function deleteMessage(name, sha) {
+            if (!confirm('确定删除?')) return;
+
+            // 1. 立即从UI移除
+            const backup = [...messageCache];
+            messageCache = messageCache.filter(m => m.name !== name);
+            renderMessages();
+            saveCache();
+
+            // 2. 后台异步删除
             try {
-                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.messageFolder}`;
-                const response = await fetch(API_BASE, {
+                const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.messageFolder}/${name}`;
+                const res = await fetch(url, {
+                    method: 'DELETE',
                     headers: {
                         'Authorization': `token ${CONFIG.token}`,
-                    }
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: 'Delete message',
+                        sha: sha,
+                        branch: CONFIG.branch
+                    })
                 });
 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        container.innerHTML = `
+                if (res.ok) {
+                    showToast('✅ 已删除', 'success');
+                    setTimeout(() => refreshMessages(), 1500);
+                } else {
+                    throw new Error('删除失败');
+                }
+            } catch (error) {
+                showToast('❌ 删除失败，已恢复', 'error');
+                messageCache = backup;
+                renderMessages();
+            }
+        }
+
+        // ============ 智能刷新消息 ============
+        async function refreshMessages() {
+            try {
+                const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.messageFolder}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `token ${CONFIG.token}` }
+                });
+
+                if (res.status === 404) {
+                    if (messageCache.length === 0) {
+                        document.getElementById('messageListContainer').innerHTML = `
                             <div class="empty-state">
                                 <div class="empty-state-icon">💬</div>
                                 <h3>还没有消息</h3>
-                                <p>发送第一条消息开始交流吧！</p>
                             </div>
                         `;
-                        updateLastSyncTime();
-                        return;
                     }
-                    throw new Error(`获取消息失败: ${response.status}`);
+                    updateLastSyncTime();
+                    return;
                 }
+
+                if (!res.ok) return;
 
                 const files = await response.json();
                 const messages = files.filter(f => f.name.startsWith('message_'));
-                // 显示所有消息（不做时间过滤）
-                const todayMessages = messages;
 
-                if (todayMessages.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💬</div>
-                            <h3>今天还没有消息</h3>
-                            <p>发送消息开始交流吧！</p>
-                        </div>
-                    `;
-                } else {
-                    await renderMessageList(todayMessages);
-                }
+                // 批量获取消息内容（使用CDN加速）
+                const loadedMsgs = await Promise.all(messages.map(async msg => {
+                    try {
+                        // 优先使用jsDelivr CDN
+                        const cdnUrl = `https://cdn.jsdelivr.net/gh/${CONFIG.owner}/${CONFIG.repo}@${CONFIG.branch}/${CONFIG.messageFolder}/${msg.name}`;
+                        const content = await fetch(cdnUrl).then(r => r.text());
 
+                        return {
+                            id: msg.sha,
+                            name: msg.name,
+                            content: content,
+                            time: extractTime(msg.name),
+                            sha: msg.sha,
+                            pending: false
+                        };
+                    } catch {
+                        // CDN失败，用GitHub原始地址
+                        const content = await fetch(msg.download_url).then(r => r.text());
+                        return {
+                            id: msg.sha,
+                            name: msg.name,
+                            content: content,
+                            time: extractTime(msg.name),
+                            sha: msg.sha,
+                            pending: false
+                        };
+                    }
+                }));
+
+                // 合并待上传的消息
+                const pending = messageCache.filter(m => m.pending);
+                messageCache = [...pending, ...loadedMsgs];
+
+                renderMessages();
+                saveCache();
                 updateLastSyncTime();
+
             } catch (error) {
+                console.error('刷新失败:', error);
+            }
+        }
+
+        function forceRefreshMessages() {
+            refreshMessages();
+        }
+
+        // ============ 渲染消息 ============
+        function renderMessages() {
+            const container = document.getElementById('messageListContainer');
+
+            if (messageCache.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h3>加载失败</h3>
-                        <p>${error.message}</p>
-                        <button class="btn btn-refresh" onclick="refreshMessages()" style="margin-top: 15px;">重试</button>
+                        <div class="empty-state-icon">💬</div>
+                        <h3>还没有消息</h3>
+                        <p>发送第一条消息吧</p>
                     </div>
                 `;
+                return;
             }
-        }
 
-        // 渲染消息列表
-        async function renderMessageList(messages) {
-            const container = document.getElementById('messageListContainer');
-            const messageList = document.createElement('ul');
-            messageList.className = 'item-list';
+            const list = document.createElement('ul');
+            list.className = 'item-list';
 
-            // 按时间倒序
-            messages.sort((a, b) => b.name.localeCompare(a.name));
-
-            for (const msg of messages) {
-                // 获取消息内容
-                const contentResponse = await fetch(msg.download_url);
-                const content = await contentResponse.text();
-                const time = extractUploadTime(msg.name);
-
+            messageCache.forEach(msg => {
                 const li = document.createElement('li');
-                li.className = 'message-item';
+                li.className = `message-item ${msg.pending ? 'pending' : ''}`;
                 li.innerHTML = `
-                    <div class="message-content">${escapeHtml(content)}</div>
+                    <div class="message-content">${escapeHtml(msg.content)}</div>
                     <div class="message-meta">
-                        <span class="message-time">📅 ${time}</span>
+                        <span class="message-time">📅 ${formatTime(msg.time)}</span>
                         <div class="message-actions">
-                            <button class="btn btn-delete" onclick='deleteItem("${CONFIG.messageFolder}", "${msg.name}", "${msg.sha}")'>🗑️ 删除</button>
+                            ${!msg.pending ? `<button class="btn btn-delete" onclick='deleteMessage("${msg.name}", "${msg.sha}")'>🗑️</button>` : ''}
                         </div>
                     </div>
                 `;
-                messageList.appendChild(li);
-            }
+                list.appendChild(li);
+            });
 
             container.innerHTML = '';
-            container.appendChild(messageList);
+            container.appendChild(list);
         }
 
-        // 设置上传区域
-        function setupUploadArea() {
+        // ============ 文件功能 ============
+        function setupUI() {
             const uploadArea = document.getElementById('uploadArea');
             const fileInput = document.getElementById('fileInput');
 
-            uploadArea.addEventListener('click', () => fileInput.click());
+            uploadArea.onclick = () => fileInput.click();
 
-            uploadArea.addEventListener('dragover', (e) => {
+            uploadArea.ondragover = (e) => {
                 e.preventDefault();
                 uploadArea.classList.add('dragover');
-            });
+            };
 
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('dragover');
-            });
+            uploadArea.ondragleave = () => uploadArea.classList.remove('dragover');
 
-            uploadArea.addEventListener('drop', (e) => {
+            uploadArea.ondrop = (e) => {
                 e.preventDefault();
                 uploadArea.classList.remove('dragover');
-                const files = Array.from(e.dataTransfer.files);
-                uploadFiles(files);
-            });
+                uploadFiles(Array.from(e.dataTransfer.files));
+            };
 
-            fileInput.addEventListener('change', (e) => {
-                const files = Array.from(e.target.files);
-                uploadFiles(files);
+            fileInput.onchange = (e) => {
+                uploadFiles(Array.from(e.target.files));
                 fileInput.value = '';
-            });
+            };
         }
 
-        // 上传文件
         async function uploadFiles(files) {
             for (const file of files) {
                 try {
@@ -978,10 +812,9 @@
                     const content = await readFileAsBase64(file);
                     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                     const fileName = `${timestamp}_${file.name}`;
+                    const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.fileFolder}/${fileName}`;
 
-                    const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.fileFolder}`;
-
-                    const response = await fetch(`${API_BASE}/${fileName}`, {
+                    const res = await fetch(url, {
                         method: 'PUT',
                         headers: {
                             'Authorization': `token ${CONFIG.token}`,
@@ -994,354 +827,335 @@
                         })
                     });
 
-                    if (response.ok) {
-                        showToast(`✅ ${file.name} 上传成功！`, 'success');
+                    if (res.ok) {
+                        showToast(`✅ ${file.name} 上传成功`, 'success');
                     } else {
-                        throw new Error(`上传失败: ${response.status}`);
+                        throw new Error('上传失败');
                     }
                 } catch (error) {
-                    showToast(`❌ ${file.name} 上传失败: ${error.message}`, 'error');
+                    showToast(`❌ ${file.name} 上传失败`, 'error');
                 }
             }
 
-            // 延迟1秒刷新，等待GitHub API更新缓存
-            setTimeout(() => {
-                refreshFiles();
-            }, 1000);
+            setTimeout(() => refreshFiles(), 1500);
         }
 
-        // 读取文件为Base64
         function readFileAsBase64(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
-                reader.onload = () => {
-                    const base64 = reader.result.split(',')[1];
-                    resolve(base64);
-                };
+                reader.onload = () => resolve(reader.result.split(',')[1]);
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
         }
 
-        // 刷新文件列表
         async function refreshFiles() {
-            const container = document.getElementById('fileListContainer');
-            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在加载...</p></div>';
-
             try {
-                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.fileFolder}`;
-                const response = await fetch(API_BASE, {
-                    headers: {
-                        'Authorization': `token ${CONFIG.token}`,
-                    }
+                const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.fileFolder}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `token ${CONFIG.token}` }
                 });
 
-                if (!response.ok) {
-                    if (response.status === 404) {
-                        container.innerHTML = `
+                if (res.status === 404) {
+                    if (fileCache.length === 0) {
+                        document.getElementById('fileListContainer').innerHTML = `
                             <div class="empty-state">
                                 <div class="empty-state-icon">📭</div>
                                 <h3>还没有文件</h3>
-                                <p>上传第一个文件开始同步吧！</p>
                             </div>
                         `;
-                        updateLastSyncTime();
-                        return;
                     }
-                    throw new Error(`获取文件列表失败: ${response.status}`);
+                    updateLastSyncTime();
+                    return;
                 }
 
-                const files = await response.json();
-                // 显示所有文件（不做时间过滤）
-                const todayFiles = files;
+                if (!res.ok) return;
 
-                if (todayFiles.length === 0) {
-                    container.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">📭</div>
-                            <h3>今天还没有文件</h3>
-                            <p>上传文件开始同步吧！</p>
-                        </div>
-                    `;
-                } else {
-                    renderFileList(todayFiles);
-                }
+                const files = await res.json();
+                fileCache = files.map(f => ({
+                    name: f.name,
+                    sha: f.sha,
+                    size: f.size,
+                    downloadUrl: f.download_url
+                }));
 
+                renderFiles();
+                saveCache();
                 updateLastSyncTime();
+
             } catch (error) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">⚠️</div>
-                        <h3>加载失败</h3>
-                        <p>${error.message}</p>
-                        <button class="btn btn-refresh" onclick="refreshFiles()" style="margin-top: 15px;">重试</button>
-                    </div>
-                `;
+                console.error('刷新文件失败:', error);
             }
         }
 
-        // 渲染文件列表
-        function renderFileList(files) {
+        function forceRefreshFiles() {
+            refreshFiles();
+        }
+
+        function renderFiles() {
             const container = document.getElementById('fileListContainer');
-            const fileList = document.createElement('ul');
-            fileList.className = 'item-list';
 
-            files.sort((a, b) => b.name.localeCompare(a.name));
+            if (fileCache.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <h3>还没有文件</h3>
+                    </div>
+                `;
+                return;
+            }
 
-            files.forEach(file => {
+            const list = document.createElement('ul');
+            list.className = 'item-list';
+
+            fileCache.forEach(file => {
                 const originalName = file.name.replace(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z_/, '');
                 const fileSize = formatFileSize(file.size);
-                const uploadTime = extractUploadTime(file.name);
-                const fileIcon = getFileIcon(originalName);
+                const icon = getFileIcon(originalName);
 
                 const li = document.createElement('li');
                 li.className = 'file-item';
                 li.innerHTML = `
                     <div class="file-info">
-                        <div class="file-icon">${fileIcon}</div>
+                        <div class="file-icon">${icon}</div>
                         <div class="file-details">
                             <div class="file-name">${originalName}</div>
-                            <div class="file-meta">${fileSize} · ${uploadTime}</div>
+                            <div class="file-meta">${fileSize}</div>
                         </div>
                     </div>
                     <div class="file-actions">
-                        <button class="btn btn-download" onclick='downloadFile(${JSON.stringify(file)}, "${originalName}")'>⬇️ 下载</button>
-                        <button class="btn btn-delete" onclick='deleteItem("${CONFIG.fileFolder}", "${file.name}", "${file.sha}")'>🗑️ 删除</button>
+                        <button class="btn btn-download" onclick='downloadFile("${file.downloadUrl}", "${originalName}")'>⬇️</button>
+                        <button class="btn btn-delete" onclick='deleteFile("${file.name}", "${file.sha}")'>🗑️</button>
                     </div>
                 `;
-                fileList.appendChild(li);
+                list.appendChild(li);
             });
 
             container.innerHTML = '';
-            container.appendChild(fileList);
+            container.appendChild(list);
         }
 
-        // 下载文件
-        async function downloadFile(file, originalName) {
+        async function downloadFile(url, name) {
             try {
-                showToast(`正在下载 ${originalName}...`, 'info');
-
-                const response = await fetch(file.download_url);
-                const blob = await response.blob();
-
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = originalName;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-
-                showToast(`✅ ${originalName} 下载成功！`, 'success');
+                showToast(`正在下载 ${name}...`, 'info');
+                const blob = await fetch(url).then(r => r.blob());
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = name;
+                link.click();
+                URL.revokeObjectURL(link.href);
+                showToast(`✅ 下载成功`, 'success');
             } catch (error) {
-                showToast(`❌ 下载失败: ${error.message}`, 'error');
+                showToast('❌ 下载失败', 'error');
             }
         }
 
-        // 删除项目（消息或文件）
-        async function deleteItem(folder, fileName, sha) {
-            if (!confirm(`确定要删除吗？`)) {
-                return;
-            }
+        async function deleteFile(name, sha) {
+            if (!confirm('确定删除?')) return;
+
+            const backup = [...fileCache];
+            fileCache = fileCache.filter(f => f.name !== name);
+            renderFiles();
+            saveCache();
 
             try {
-                showToast('正在删除...', 'info');
-
-                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${folder}`;
-                const response = await fetch(`${API_BASE}/${fileName}`, {
+                const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.fileFolder}/${name}`;
+                const res = await fetch(url, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `token ${CONFIG.token}`,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        message: `Delete ${fileName}`,
+                        message: 'Delete file',
                         sha: sha,
                         branch: CONFIG.branch
                     })
                 });
 
-                if (response.ok) {
-                    showToast('✅ 已删除（其他设备将在2秒内同步）', 'success');
-                    // 延迟1秒刷新，等待GitHub API更新缓存
-                    setTimeout(() => {
-                        if (folder === CONFIG.messageFolder) {
-                            refreshMessages();
-                        } else {
-                            refreshFiles();
-                        }
-                    }, 1000);
+                if (res.ok) {
+                    showToast('✅ 已删除', 'success');
+                    setTimeout(() => refreshFiles(), 1500);
                 } else {
-                    throw new Error(`删除失败: ${response.status}`);
+                    throw new Error('删除失败');
                 }
             } catch (error) {
-                showToast(`❌ 删除失败: ${error.message}`, 'error');
+                showToast('❌ 删除失败', 'error');
+                fileCache = backup;
+                renderFiles();
             }
         }
 
-        // 清理旧项目
-        async function cleanOldItems(type) {
-            if (!confirm('确定要清理24小时前的旧内容吗？')) {
-                return;
-            }
-
-            const folder = type === 'messages' ? CONFIG.messageFolder : CONFIG.fileFolder;
+        // ============ 清理功能 ============
+        async function cleanOldMessages() {
+            if (!confirm('清理24小时前的消息?')) return;
 
             try {
-                const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${folder}`;
-                const response = await fetch(API_BASE, {
-                    headers: {
-                        'Authorization': `token ${CONFIG.token}`,
-                    }
+                const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.messageFolder}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `token ${CONFIG.token}` }
                 });
 
-                if (!response.ok) return;
+                if (!res.ok) return;
 
-                const files = await response.json();
-                const now = new Date();
-                const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-
-                let deletedCount = 0;
+                const files = await res.json();
+                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+                let count = 0;
 
                 for (const file of files) {
-                    const match = file.name.match(/^(message_)?(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
-                    if (match) {
-                        const dateStr = match[2];
-                        const fileDate = new Date(dateStr.replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
-                        if (fileDate < yesterday) {
-                            await fetch(`${API_BASE}/${file.name}`, {
-                                method: 'DELETE',
-                                headers: {
-                                    'Authorization': `token ${CONFIG.token}`,
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    message: `Clean old ${file.name}`,
-                                    sha: file.sha,
-                                    branch: CONFIG.branch
-                                })
-                            });
-                            deletedCount++;
-                        }
+                    const time = extractTime(file.name);
+                    if (time < yesterday) {
+                        await fetch(`${url}/${file.name}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `token ${CONFIG.token}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                message: 'Clean old',
+                                sha: file.sha,
+                                branch: CONFIG.branch
+                            })
+                        });
+                        count++;
                     }
                 }
 
-                showToast(`✅ 已清理 ${deletedCount} 项旧内容`, 'success');
-                if (type === 'messages') {
-                    refreshMessages();
-                } else {
-                    refreshFiles();
-                }
+                showToast(`✅ 已清理 ${count} 条`, 'success');
+                refreshMessages();
             } catch (error) {
-                showToast(`❌ 清理失败: ${error.message}`, 'error');
+                showToast('❌ 清理失败', 'error');
             }
         }
 
-        // 过滤最近24小时的项目（临时禁用，显示所有）
-        function filterTodayItems(items) {
-            // 临时返回所有项目，用于调试
-            return items;
+        async function cleanOldFiles() {
+            if (!confirm('清理24小时前的文件?')) return;
 
-            /* 原时间过滤逻辑
-            const now = new Date();
-            const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            try {
+                const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.fileFolder}`;
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `token ${CONFIG.token}` }
+                });
 
-            return items.filter(item => {
-                const match = item.name.match(/^(message_)?(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
-                if (match) {
-                    const dateStr = match[2];
-                    // 添加Z表示UTC时间，确保正确解析
-                    const itemDate = new Date(dateStr.replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z');
-                    return itemDate >= yesterday;
+                if (!res.ok) return;
+
+                const files = await res.json();
+                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
+                let count = 0;
+
+                for (const file of files) {
+                    const time = extractTime(file.name);
+                    if (time < yesterday) {
+                        await fetch(`${url}/${file.name}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `token ${CONFIG.token}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                message: 'Clean old',
+                                sha: file.sha,
+                                branch: CONFIG.branch
+                            })
+                        });
+                        count++;
+                    }
                 }
-                return false;
-            });
-            */
+
+                showToast(`✅ 已清理 ${count} 个文件`, 'success');
+                refreshFiles();
+            } catch (error) {
+                showToast('❌ 清理失败', 'error');
+            }
         }
 
-        // 开始自动刷新
-        function startAutoRefresh() {
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
+        // ============ Tab切换 ============
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            if (tab === 'messages') {
+                document.getElementById('messagesTab').classList.add('active');
+            } else {
+                document.getElementById('filesTab').classList.add('active');
             }
+        }
+
+        // ============ 自动刷新 ============
+        function startAutoRefresh() {
+            if (autoRefreshInterval) clearInterval(autoRefreshInterval);
+
             autoRefreshInterval = setInterval(() => {
                 if (currentTab === 'messages') {
                     refreshMessages();
                 } else {
                     refreshFiles();
                 }
-            }, 2000); // 每2秒刷新一次，更快同步
+            }, 1000);  // 1秒刷新
         }
 
-        // 更新最后同步时间
+        // ============ 工具函数 ============
+        function extractTime(fileName) {
+            const match = fileName.match(/(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)/);
+            if (match) {
+                return new Date(match[1].replace(/-(\d{2})-(\d{2})-(\d{2})-(\d{3})Z$/, ':$1:$2.$3Z'));
+            }
+            return new Date();
+        }
+
+        function formatTime(time) {
+            if (!time) return '--';
+            const d = new Date(time);
+            return d.toLocaleString('zh-CN', {
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         function updateLastSyncTime() {
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            document.getElementById('lastSyncTime').textContent = timeStr;
+            document.getElementById('lastSyncTime').textContent = now.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
         }
 
-        // 显示提示
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');
             const toastMessage = document.getElementById('toastMessage');
-
             toast.className = `toast ${type} show`;
             toastMessage.textContent = message;
-
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // 格式化文件大小
         function formatFileSize(bytes) {
-            if (bytes === 0) return '0 B';
+            if (!bytes) return '0 B';
             const k = 1024;
             const sizes = ['B', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
 
-        // 提取上传时间
-        function extractUploadTime(fileName) {
-            const match = fileName.match(/^(message_)?(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
-            if (match) {
-                const dateStr = match[2];
-                const date = new Date(dateStr.replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
-                return date.toLocaleString('zh-CN', {
-                    month: '2-digit',
-                    day: '2-digit',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-            }
-            return '未知时间';
-        }
-
-        // 获取文件图标
-        function getFileIcon(fileName) {
-            const ext = fileName.split('.').pop().toLowerCase();
-            const iconMap = {
-                'pdf': '📄',
-                'doc': '📝', 'docx': '📝',
-                'xls': '📊', 'xlsx': '📊',
-                'ppt': '📊', 'pptx': '📊',
+        function getFileIcon(name) {
+            const ext = name.split('.').pop().toLowerCase();
+            const icons = {
+                'pdf': '📄', 'doc': '📝', 'docx': '📝',
+                'xls': '📊', 'xlsx': '📊', 'ppt': '📊', 'pptx': '📊',
                 'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️',
-                'mp4': '🎥', 'avi': '🎥', 'mov': '🎥',
-                'mp3': '🎵', 'wav': '🎵',
-                'zip': '📦', 'rar': '📦', '7z': '📦',
-                'txt': '📃',
-                'html': '🌐', 'css': '🎨', 'js': '⚙️',
+                'mp4': '🎥', 'zip': '📦', 'rar': '📦', 'txt': '📃'
             };
-            return iconMap[ext] || '📎';
-        }
-
-        // HTML转义
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+            return icons[ext] || '📎';
         }
     </script>
 </body>
