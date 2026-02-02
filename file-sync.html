@@ -692,7 +692,7 @@
 
                 if (!res.ok) return;
 
-                const files = await response.json();
+                const files = await res.json();
                 const messages = files.filter(f => f.name.startsWith('message_'));
 
                 // 批量获取消息内容（使用CDN加速）
