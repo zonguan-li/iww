@@ -1225,17 +1225,18 @@
             }
         }
 
-        // 过滤今天的项目
+        // 过滤最近24小时的项目
         function filterTodayItems(items) {
             const now = new Date();
-            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
             return items.filter(item => {
                 const match = item.name.match(/^(message_)?(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
                 if (match) {
                     const dateStr = match[2];
-                    const itemDate = new Date(dateStr.replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
-                    return itemDate >= today;
+                    // 添加Z表示UTC时间，确保正确解析
+                    const itemDate = new Date(dateStr.replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2') + 'Z');
+                    return itemDate >= yesterday;
                 }
                 return false;
             });
