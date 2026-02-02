@@ -724,6 +724,9 @@
                     }
                 }));
 
+                // 按时间倒序排序（最新的在最上面）
+                loadedMsgs.sort((a, b) => new Date(b.time) - new Date(a.time));
+
                 // 合并待上传的消息
                 const pending = messageCache.filter(m => m.pending);
                 messageCache = [...pending, ...loadedMsgs];
@@ -767,7 +770,7 @@
                     <div class="message-meta">
                         <span class="message-time">📅 ${formatTime(msg.time)}</span>
                         <div class="message-actions">
-                            ${!msg.pending ? `<button class="btn btn-delete" onclick='deleteMessage("${msg.name}", "${msg.sha}")'>🗑️</button>` : ''}
+                            ${!msg.pending ? `<button class="btn btn-delete" data-name="${escapeHtml(msg.name)}" data-sha="${escapeHtml(msg.sha)}">🗑️</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -776,6 +779,20 @@
 
             container.innerHTML = '';
             container.appendChild(list);
+
+            // 添加删除按钮事件委托
+            container.removeEventListener('click', handleMessageDelete);
+            container.addEventListener('click', handleMessageDelete);
+        }
+
+        function handleMessageDelete(e) {
+            if (e.target.classList.contains('btn-delete')) {
+                const name = e.target.getAttribute('data-name');
+                const sha = e.target.getAttribute('data-sha');
+                if (name && sha) {
+                    deleteMessage(name, sha);
+                }
+            }
         }
 
         // ============ 文件功能 ============
@@ -879,6 +896,9 @@
                     downloadUrl: f.download_url
                 }));
 
+                // 按时间倒序排序（最新的在最上面）
+                fileCache.sort((a, b) => b.name.localeCompare(a.name));
+
                 renderFiles();
                 saveCache();
                 updateLastSyncTime();
@@ -919,13 +939,13 @@
                     <div class="file-info">
                         <div class="file-icon">${icon}</div>
                         <div class="file-details">
-                            <div class="file-name">${originalName}</div>
+                            <div class="file-name">${escapeHtml(originalName)}</div>
                             <div class="file-meta">${fileSize}</div>
                         </div>
                     </div>
                     <div class="file-actions">
-                        <button class="btn btn-download" onclick='downloadFile("${file.downloadUrl}", "${originalName}")'>⬇️</button>
-                        <button class="btn btn-delete" onclick='deleteFile("${file.name}", "${file.sha}")'>🗑️</button>
+                        <button class="btn btn-download" data-url="${escapeHtml(file.downloadUrl)}" data-filename="${escapeHtml(originalName)}">⬇️</button>
+                        <button class="btn btn-delete" data-name="${escapeHtml(file.name)}" data-sha="${escapeHtml(file.sha)}">🗑️</button>
                     </div>
                 `;
                 list.appendChild(li);
@@ -933,6 +953,26 @@
 
             container.innerHTML = '';
             container.appendChild(list);
+
+            // 添加文件操作事件委托
+            container.removeEventListener('click', handleFileAction);
+            container.addEventListener('click', handleFileAction);
+        }
+
+        function handleFileAction(e) {
+            if (e.target.classList.contains('btn-download')) {
+                const url = e.target.getAttribute('data-url');
+                const filename = e.target.getAttribute('data-filename');
+                if (url && filename) {
+                    downloadFile(url, filename);
+                }
+            } else if (e.target.classList.contains('btn-delete')) {
+                const name = e.target.getAttribute('data-name');
+                const sha = e.target.getAttribute('data-sha');
+                if (name && sha) {
+                    deleteFile(name, sha);
+                }
+            }
         }
 
         async function downloadFile(url, name) {
