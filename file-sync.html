@@ -1225,8 +1225,12 @@
             }
         }
 
-        // 过滤最近24小时的项目
+        // 过滤最近24小时的项目（临时禁用，显示所有）
         function filterTodayItems(items) {
+            // 临时返回所有项目，用于调试
+            return items;
+
+            /* 原时间过滤逻辑
             const now = new Date();
             const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
@@ -1240,6 +1244,7 @@
                 }
                 return false;
             });
+            */
         }
 
         // 开始自动刷新
