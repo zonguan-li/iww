@@ -725,9 +725,13 @@
                 }));
 
                 // 按时间倒序排序（最新的在最上面）
-                loadedMsgs.sort((a, b) => new Date(b.time) - new Date(a.time));
+                loadedMsgs.sort((a, b) => {
+                    const timeA = new Date(a.time).getTime();
+                    const timeB = new Date(b.time).getTime();
+                    return timeB - timeA; // 降序：新的在前
+                });
 
-                // 合并待上传的消息
+                // 合并待上传的消息（pending 放在最前面）
                 const pending = messageCache.filter(m => m.pending);
                 messageCache = [...pending, ...loadedMsgs];
 
@@ -1043,7 +1047,7 @@
                 let count = 0;
 
                 for (const file of files) {
-                    const time = extractTime(file.name);
+                    const time = new Date(extractTime(file.name));
                     if (time < yesterday) {
                         await fetch(`${url}/${file.name}`, {
                             method: 'DELETE',
@@ -1084,7 +1088,7 @@
                 let count = 0;
 
                 for (const file of files) {
-                    const time = extractTime(file.name);
+                    const time = new Date(extractTime(file.name));
                     if (time < yesterday) {
                         await fetch(`${url}/${file.name}`, {
                             method: 'DELETE',
@@ -1138,11 +1142,14 @@
 
         // ============ 工具函数 ============
         function extractTime(fileName) {
-            const match = fileName.match(/(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z)/);
+            // 文件名格式: message_2026-02-02T14-30-45-123Z.txt
+            const match = fileName.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z/);
             if (match) {
-                return new Date(match[1].replace(/-(\d{2})-(\d{2})-(\d{2})-(\d{3})Z$/, ':$1:$2.$3Z'));
+                // 转换为标准 ISO 格式: 2026-02-02T14:30:45.123Z
+                const isoString = `${match[1]}-${match[2]}-${match[3]}T${match[4]}:${match[5]}:${match[6]}.${match[7]}Z`;
+                return isoString;
             }
-            return new Date();
+            return new Date().toISOString();
         }
 
         function formatTime(time) {
