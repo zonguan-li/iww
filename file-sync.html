@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备文件同步</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .status {
+            padding: 15px 30px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .last-sync {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .upload-area {
+            padding: 30px;
+            border-bottom: 2px dashed #dee2e6;
+            margin: 30px;
+            text-align: center;
+            border-radius: 10px;
+            background: #f8f9fa;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .upload-area.dragover {
+            background: #e7f3ff;
+            border-color: #667eea;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-area h3 {
+            margin-bottom: 10px;
+            color: #495057;
+        }
+
+        .upload-area p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .files-section {
+            padding: 30px;
+        }
+
+        .files-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .files-header h2 {
+            font-size: 20px;
+            color: #212529;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-refresh {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-refresh:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        .btn-clean {
+            background: #dc3545;
+            color: white;
+            margin-left: 10px;
+        }
+
+        .btn-clean:hover {
+            background: #c82333;
+        }
+
+        .file-list {
+            list-style: none;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .file-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .file-icon {
+            font-size: 24px;
+        }
+
+        .file-details {
+            flex: 1;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #212529;
+            margin-bottom: 4px;
+        }
+
+        .file-meta {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-download {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #218838;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.show {
+            display: flex;
+        }
+
+        .toast.success {
+            border-left: 4px solid #28a745;
+        }
+
+        .toast.error {
+            border-left: 4px solid #dc3545;
+        }
+
+        .toast.info {
+            border-left: 4px solid #17a2b8;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                border-radius: 0;
+            }
+
+            .file-item {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .file-actions {
+                width: 100%;
+            }
+
+            .btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📁 设备文件同步</h1>
+            <p>A设备 ⇄ B设备 无缝文件传输</p>
+        </div>
+
+        <div class="status">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>在线同步中</span>
+            </div>
+            <div class="last-sync">最后同步: <span id="lastSyncTime">--</span></div>
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">☁️</div>
+            <h3>点击或拖拽文件到此处上传</h3>
+            <p>支持所有文件类型，文件将保存24小时</p>
+            <input type="file" id="fileInput" class="file-input" multiple>
+        </div>
+
+        <div class="files-section">
+            <div class="files-header">
+                <h2>📂 文件列表</h2>
+                <div>
+                    <button class="btn btn-refresh" onclick="refreshFiles()">🔄 刷新</button>
+                    <button class="btn btn-clean" onclick="cleanOldFiles()">🗑️ 清理旧文件</button>
+                </div>
+            </div>
+
+            <div id="fileListContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>正在加载文件列表...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">
+        <span id="toastMessage"></span>
+    </div>
+
+    <script>
+        // GitHub配置
+        const CONFIG = {
+            owner: 'zongxuan-li',
+            repo: 'iww',
+            token: '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',
+            branch: 'main',
+            folder: 'sync-files' // 文件存储在这个文件夹
+        };
+
+        const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.folder}`;
+
+        // 自动轮询间隔（5秒）
+        let autoRefreshInterval;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            setupUploadArea();
+            refreshFiles();
+            startAutoRefresh();
+        });
+
+        // 设置上传区域
+        function setupUploadArea() {
+            const uploadArea = document.getElementById('uploadArea');
+            const fileInput = document.getElementById('fileInput');
+
+            uploadArea.addEventListener('click', () => fileInput.click());
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = Array.from(e.dataTransfer.files);
+                uploadFiles(files);
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                const files = Array.from(e.target.files);
+                uploadFiles(files);
+                fileInput.value = ''; // 清空input，允许重复上传同名文件
+            });
+        }
+
+        // 上传文件
+        async function uploadFiles(files) {
+            for (const file of files) {
+                try {
+                    showToast(`正在上传 ${file.name}...`, 'info');
+
+                    const content = await readFileAsBase64(file);
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    const fileName = `${timestamp}_${file.name}`;
+
+                    const response = await fetch(`${API_BASE}/${fileName}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${CONFIG.token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: `Upload ${file.name}`,
+                            content: content,
+                            branch: CONFIG.branch
+                        })
+                    });
+
+                    if (response.ok) {
+                        showToast(`✅ ${file.name} 上传成功！`, 'success');
+                    } else {
+                        throw new Error(`上传失败: ${response.status}`);
+                    }
+                } catch (error) {
+                    showToast(`❌ ${file.name} 上传失败: ${error.message}`, 'error');
+                }
+            }
+
+            refreshFiles();
+        }
+
+        // 读取文件为Base64
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 刷新文件列表
+        async function refreshFiles() {
+            const container = document.getElementById('fileListContainer');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><p>正在加载...</p></div>';
+
+            try {
+                const response = await fetch(API_BASE, {
+                    headers: {
+                        'Authorization': `token ${CONFIG.token}`,
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        // 文件夹不存在，显示空状态
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📭</div>
+                                <h3>还没有文件</h3>
+                                <p>上传第一个文件开始同步吧！</p>
+                            </div>
+                        `;
+                        updateLastSyncTime();
+                        return;
+                    }
+                    throw new Error(`获取文件列表失败: ${response.status}`);
+                }
+
+                const files = await response.json();
+
+                if (!Array.isArray(files) || files.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📭</div>
+                            <h3>还没有文件</h3>
+                            <p>上传第一个文件开始同步吧！</p>
+                        </div>
+                    `;
+                } else {
+                    // 过滤今天的文件
+                    const todayFiles = filterTodayFiles(files);
+
+                    if (todayFiles.length === 0) {
+                        container.innerHTML = `
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📭</div>
+                                <h3>今天还没有文件</h3>
+                                <p>旧文件已被清理</p>
+                            </div>
+                        `;
+                    } else {
+                        renderFileList(todayFiles);
+                    }
+                }
+
+                updateLastSyncTime();
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>加载失败</h3>
+                        <p>${error.message}</p>
+                        <button class="btn btn-refresh" onclick="refreshFiles()" style="margin-top: 15px;">重试</button>
+                    </div>
+                `;
+            }
+        }
+
+        // 过滤今天的文件
+        function filterTodayFiles(files) {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+            return files.filter(file => {
+                // 从文件名中提取时间戳
+                const match = file.name.match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
+                if (match) {
+                    const fileDate = new Date(match[1].replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
+                    return fileDate >= today;
+                }
+                return false;
+            });
+        }
+
+        // 渲染文件列表
+        function renderFileList(files) {
+            const container = document.getElementById('fileListContainer');
+            const fileList = document.createElement('ul');
+            fileList.className = 'file-list';
+
+            // 按时间倒序排列
+            files.sort((a, b) => b.name.localeCompare(a.name));
+
+            files.forEach(file => {
+                const originalName = file.name.replace(/^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z_/, '');
+                const fileSize = formatFileSize(file.size);
+                const uploadTime = extractUploadTime(file.name);
+                const fileIcon = getFileIcon(originalName);
+
+                const li = document.createElement('li');
+                li.className = 'file-item';
+                li.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-icon">${fileIcon}</div>
+                        <div class="file-details">
+                            <div class="file-name">${originalName}</div>
+                            <div class="file-meta">${fileSize} · ${uploadTime}</div>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-download" onclick='downloadFile(${JSON.stringify(file)}, "${originalName}")'>⬇️ 下载</button>
+                        <button class="btn btn-delete" onclick='deleteFile("${file.name}", "${file.sha}")'>🗑️ 删除</button>
+                    </div>
+                `;
+                fileList.appendChild(li);
+            });
+
+            container.innerHTML = '';
+            container.appendChild(fileList);
+        }
+
+        // 下载文件
+        async function downloadFile(file, originalName) {
+            try {
+                showToast(`正在下载 ${originalName}...`, 'info');
+
+                const response = await fetch(file.download_url);
+                const blob = await response.blob();
+
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = originalName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                showToast(`✅ ${originalName} 下载成功！`, 'success');
+            } catch (error) {
+                showToast(`❌ 下载失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 删除文件
+        async function deleteFile(fileName, sha) {
+            if (!confirm(`确定要删除这个文件吗？`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/${fileName}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `token ${CONFIG.token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: `Delete ${fileName}`,
+                        sha: sha,
+                        branch: CONFIG.branch
+                    })
+                });
+
+                if (response.ok) {
+                    showToast('✅ 文件已删除', 'success');
+                    refreshFiles();
+                } else {
+                    throw new Error(`删除失败: ${response.status}`);
+                }
+            } catch (error) {
+                showToast(`❌ 删除失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 清理旧文件
+        async function cleanOldFiles() {
+            if (!confirm('确定要清理24小时前的旧文件吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(API_BASE, {
+                    headers: {
+                        'Authorization': `token ${CONFIG.token}`,
+                    }
+                });
+
+                if (!response.ok) return;
+
+                const files = await response.json();
+                const now = new Date();
+                const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+
+                let deletedCount = 0;
+
+                for (const file of files) {
+                    const match = file.name.match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
+                    if (match) {
+                        const fileDate = new Date(match[1].replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
+                        if (fileDate < yesterday) {
+                            await fetch(`${API_BASE}/${file.name}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Authorization': `token ${CONFIG.token}`,
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    message: `Clean old file ${file.name}`,
+                                    sha: file.sha,
+                                    branch: CONFIG.branch
+                                })
+                            });
+                            deletedCount++;
+                        }
+                    }
+                }
+
+                showToast(`✅ 已清理 ${deletedCount} 个旧文件`, 'success');
+                refreshFiles();
+            } catch (error) {
+                showToast(`❌ 清理失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 开始自动刷新
+        function startAutoRefresh() {
+            autoRefreshInterval = setInterval(() => {
+                refreshFiles();
+            }, 5000); // 每5秒刷新一次
+        }
+
+        // 更新最后同步时间
+        function updateLastSyncTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('lastSyncTime').textContent = timeStr;
+        }
+
+        // 显示提示
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+
+            toast.className = `toast ${type} show`;
+            toastMessage.textContent = message;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+
+        // 提取上传时间
+        function extractUploadTime(fileName) {
+            const match = fileName.match(/^(\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2})/);
+            if (match) {
+                const date = new Date(match[1].replace(/-(\d{2})-(\d{2})-(\d{2})$/, ':$1:$2:$3'));
+                return date.toLocaleString('zh-CN', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+            return '未知时间';
+        }
+
+        // 获取文件图标
+        function getFileIcon(fileName) {
+            const ext = fileName.split('.').pop().toLowerCase();
+            const iconMap = {
+                'pdf': '📄',
+                'doc': '📝', 'docx': '📝',
+                'xls': '📊', 'xlsx': '📊',
+                'ppt': '📊', 'pptx': '📊',
+                'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🖼️',
+                'mp4': '🎥', 'avi': '🎥', 'mov': '🎥',
+                'mp3': '🎵', 'wav': '🎵',
+                'zip': '📦', 'rar': '📦', '7z': '📦',
+                'txt': '📃',
+                'html': '🌐', 'css': '🎨', 'js': '⚙️',
+            };
+            return iconMap[ext] || '📎';
+        }
+    </script>
+</body>
+</html>
