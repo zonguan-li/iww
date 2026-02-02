@@ -836,7 +836,10 @@
                 if (response.ok) {
                     showToast('✅ 消息发送成功！', 'success');
                     input.value = '';
-                    refreshMessages();
+                    // 延迟1秒刷新，等待GitHub API更新缓存
+                    setTimeout(() => {
+                        refreshMessages();
+                    }, 1000);
                 } else {
                     throw new Error(`发送失败: ${response.status}`);
                 }
@@ -1001,7 +1004,10 @@
                 }
             }
 
-            refreshFiles();
+            // 延迟1秒刷新，等待GitHub API更新缓存
+            setTimeout(() => {
+                refreshFiles();
+            }, 1000);
         }
 
         // 读取文件为Base64
@@ -1158,12 +1164,14 @@
 
                 if (response.ok) {
                     showToast('✅ 已删除（其他设备将在2秒内同步）', 'success');
-                    // 立即刷新本地显示
-                    if (folder === CONFIG.messageFolder) {
-                        refreshMessages();
-                    } else {
-                        refreshFiles();
-                    }
+                    // 延迟1秒刷新，等待GitHub API更新缓存
+                    setTimeout(() => {
+                        if (folder === CONFIG.messageFolder) {
+                            refreshMessages();
+                        } else {
+                            refreshFiles();
+                        }
+                    }, 1000);
                 } else {
                     throw new Error(`删除失败: ${response.status}`);
                 }
