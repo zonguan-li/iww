@@ -611,7 +611,7 @@
                     <input type="text" id="messageInput" class="message-input" placeholder="输入消息内容..." onkeypress="handleMessageEnter(event)">
                     <button class="btn-send" onclick="sendMessage()">📤 发送</button>
                 </div>
-                <div class="message-hint">💡 发送文本消息，对方设备刷新即可看到</div>
+                <div class="message-hint">💡 发送文本消息，对方设备2秒内自动同步</div>
             </div>
 
             <div class="list-header">
@@ -1140,6 +1140,8 @@
             }
 
             try {
+                showToast('正在删除...', 'info');
+
                 const API_BASE = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${folder}`;
                 const response = await fetch(`${API_BASE}/${fileName}`, {
                     method: 'DELETE',
@@ -1155,7 +1157,8 @@
                 });
 
                 if (response.ok) {
-                    showToast('✅ 已删除', 'success');
+                    showToast('✅ 已删除（其他设备将在2秒内同步）', 'success');
+                    // 立即刷新本地显示
                     if (folder === CONFIG.messageFolder) {
                         refreshMessages();
                     } else {
@@ -1260,7 +1263,7 @@
                 } else {
                     refreshFiles();
                 }
-            }, 5000);
+            }, 2000); // 每2秒刷新一次，更快同步
         }
 
         // 更新最后同步时间
