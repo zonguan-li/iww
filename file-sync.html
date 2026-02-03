@@ -185,12 +185,29 @@
             border-radius: 6px;
             cursor: pointer;
             font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn:active {
+            transform: translateY(0);
         }
 
         .btn-refresh { background: #667eea; color: white; }
+        .btn-refresh:hover { background: #5568d3; }
+
         .btn-clean { background: #dc3545; color: white; margin-left: 10px; }
+        .btn-clean:hover { background: #c82333; }
+
         .btn-delete { background: #dc3545; color: white; }
+        .btn-delete:hover { background: #c82333; }
+
         .btn-download { background: #28a745; color: white; }
+        .btn-download:hover { background: #218838; }
 
         .item-list { list-style: none; }
 
@@ -745,6 +762,7 @@
         }
 
         function forceRefreshMessages() {
+            showToast('🔄 正在刷新消息...', 'info');
             refreshMessages();
         }
 
@@ -913,6 +931,7 @@
         }
 
         function forceRefreshFiles() {
+            showToast('🔄 正在刷新文件...', 'info');
             refreshFiles();
         }
 
@@ -1032,23 +1051,26 @@
 
         // ============ 清理功能 ============
         async function cleanOldMessages() {
-            if (!confirm('清理24小时前的消息?')) return;
+            if (!confirm('确定要清理所有消息吗？')) return;
 
             try {
+                showToast('🔄 正在清理...', 'info');
                 const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.messageFolder}`;
                 const res = await fetch(url, {
                     headers: { 'Authorization': `token ${CONFIG.token}` }
                 });
 
-                if (!res.ok) return;
+                if (!res.ok) {
+                    showToast('❌ 获取消息列表失败', 'error');
+                    return;
+                }
 
                 const files = await res.json();
-                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
                 let count = 0;
 
+                // 全部删除
                 for (const file of files) {
-                    const time = new Date(extractTime(file.name));
-                    if (time < yesterday) {
+                    try {
                         await fetch(`${url}/${file.name}`, {
                             method: 'DELETE',
                             headers: {
@@ -1056,40 +1078,48 @@
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({
-                                message: 'Clean old',
+                                message: 'Clean all messages',
                                 sha: file.sha,
                                 branch: CONFIG.branch
                             })
                         });
                         count++;
+                    } catch (e) {
+                        console.error('删除失败:', file.name, e);
                     }
                 }
 
-                showToast(`✅ 已清理 ${count} 条`, 'success');
-                refreshMessages();
+                messageCache = [];
+                saveCache();
+                showToast(`✅ 已清理 ${count} 条消息`, 'success');
+                setTimeout(() => refreshMessages(), 1000);
             } catch (error) {
+                console.error('清理失败:', error);
                 showToast('❌ 清理失败', 'error');
             }
         }
 
         async function cleanOldFiles() {
-            if (!confirm('清理24小时前的文件?')) return;
+            if (!confirm('确定要清理所有文件吗？')) return;
 
             try {
+                showToast('🔄 正在清理...', 'info');
                 const url = `https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${CONFIG.fileFolder}`;
                 const res = await fetch(url, {
                     headers: { 'Authorization': `token ${CONFIG.token}` }
                 });
 
-                if (!res.ok) return;
+                if (!res.ok) {
+                    showToast('❌ 获取文件列表失败', 'error');
+                    return;
+                }
 
                 const files = await res.json();
-                const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
                 let count = 0;
 
+                // 全部删除
                 for (const file of files) {
-                    const time = new Date(extractTime(file.name));
-                    if (time < yesterday) {
+                    try {
                         await fetch(`${url}/${file.name}`, {
                             method: 'DELETE',
                             headers: {
@@ -1097,18 +1127,23 @@
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({
-                                message: 'Clean old',
+                                message: 'Clean all files',
                                 sha: file.sha,
                                 branch: CONFIG.branch
                             })
                         });
                         count++;
+                    } catch (e) {
+                        console.error('删除失败:', file.name, e);
                     }
                 }
 
+                fileCache = [];
+                saveCache();
                 showToast(`✅ 已清理 ${count} 个文件`, 'success');
-                refreshFiles();
+                setTimeout(() => refreshFiles(), 1000);
             } catch (error) {
+                console.error('清理失败:', error);
                 showToast('❌ 清理失败', 'error');
             }
         }
