@@ -1068,8 +1068,9 @@
                 const files = await res.json();
                 let count = 0;
 
-                // 全部删除
+                // 全部删除（保留 .gitkeep）
                 for (const file of files) {
+                    if (file.name === '.gitkeep') continue; // 跳过 .gitkeep
                     try {
                         await fetch(`${url}/${file.name}`, {
                             method: 'DELETE',
@@ -1117,8 +1118,9 @@
                 const files = await res.json();
                 let count = 0;
 
-                // 全部删除
+                // 全部删除（保留 .gitkeep）
                 for (const file of files) {
+                    if (file.name === '.gitkeep') continue; // 跳过 .gitkeep
                     try {
                         await fetch(`${url}/${file.name}`, {
                             method: 'DELETE',
