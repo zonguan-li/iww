@@ -495,6 +495,7 @@
             loadConfig();
             loadCache();
 
+            // 如果没有配置，打开配置弹窗
             if (!CONFIG.token) {
                 openConfigModal();
             } else {
@@ -505,6 +506,20 @@
                 refreshFiles();
                 startAutoRefresh();
             }
+
+            // 点击背景关闭配置弹窗
+            document.getElementById('configModal').addEventListener('click', (e) => {
+                if (e.target.id === 'configModal') {
+                    closeConfigModal();
+                }
+            });
+
+            // ESC 键关闭配置弹窗
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    closeConfigModal();
+                }
+            });
         });
 
         function loadConfig() {
@@ -538,17 +553,15 @@
         }
 
         function openConfigModal() {
-            document.getElementById('inputOwner').value = CONFIG.owner;
-            document.getElementById('inputRepo').value = CONFIG.repo;
-            document.getElementById('inputToken').value = CONFIG.token;
+            // 填充已保存的配置
+            document.getElementById('inputOwner').value = CONFIG.owner || 'zonguan-li';
+            document.getElementById('inputRepo').value = CONFIG.repo || 'iww';
+            document.getElementById('inputToken').value = CONFIG.token || '';
             document.getElementById('configModal').classList.add('show');
         }
 
         function closeConfigModal() {
-            if (!CONFIG.token) {
-                showToast('请先配置Token', 'error');
-                return;
-            }
+            // 允许关闭弹窗，即使没有配置
             document.getElementById('configModal').classList.remove('show');
         }
 
